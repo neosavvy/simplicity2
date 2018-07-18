@@ -28,6 +28,7 @@ import DevelopmentSLADashboard from './app/development/sla_dashboard/SLADashboar
 import TRCDashboard from './app/development/trc/TRCDashboard';
 import VolumeDashboard from './app/development/volume/VolumeDashboard';
 import ProjectFlowDashboard from './app/internal/bpt_projects/ProjectFlow';
+import Outages from './app/internal/it_outages/Outages';
 import CrimeSummary from './app/crime/CrimeSummary';
 import Maintenance from './app/maintenance/Maintenance';
 // Budget
@@ -119,6 +120,9 @@ const Routes = () => (
         </Route>
         <Route path="bpt_projects">
           <IndexRoute component={ProjectFlowDashboard} />
+        </Route>
+        <Route path="it_outages">
+          <IndexRoute component={Outages} />
         </Route>
         <Route path="pcard_compliance">
           <IndexRoute component={PCardCompliance} />
