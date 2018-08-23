@@ -22,7 +22,7 @@ class Sankey extends React.Component {
       nodes: JSON.parse(JSON.stringify(this.props.nodes))
         .map((d, i) => { d.id = i; return d; })
         .sort((a, b) => b.value - a.value),
-      links: JSON.parse(JSON.stringify(this.props.links)),
+      links: JSON.parse(JSON.stringify(this.props.links)).filter(d => d.value > 0),
     };
 
     const lighterColor = '#559ecc';
@@ -50,13 +50,18 @@ class Sankey extends React.Component {
         nodes={graph.nodes}
         sourceAccessor="source"
         targetAccessor="target"
-        zoomToFit
         customHoverBehavior={(d) => {
+          // customHoverBehavior only fires on node hover
+          // on mouseout, passes undefined-- hence the check for whether d exists
           d && d.name ? this.setState({ hover: d.name }) : this.setState({ hover: null });
+          // return null so that non-custom behavior still happens... maybe
+          return null;
         }}
         svgAnnotationRules={(d) => {
-          if (!d.d.name) { return; }
-          // TODO: fix weird null node bug that shows $0 going to parking services and stormwater
+          // For some reason one of them has null name-- maybe that's the root?
+          if (!d.d.name) { return null; }
+
+          // TODO: have hover annotation tooltip pop up, and also do this?
 
           let label = d.d.name;
           const key = `${d.d.name}-${d.i}-nodeLabel`;
@@ -66,16 +71,20 @@ class Sankey extends React.Component {
             color: 'black',
             fontWeight: 'normal',
             textAnchor: 'left',
+            // textAlign: 'center',
+            fontSize: '0.75em'
           };
+          // style.left = d.d.x //- (4 * label.length);
+          // style.top = d.d.y
 
-          const hoverInSourceLinks = d.edges.find(edge => edge.source.name === this.state.hover && edge.target.name === d.d.name);
-          const hoverInDestLinks = d.edges.find(edge => edge.target.name === this.state.hover && edge.source.name === d.d.name);
+          const hoverInSourceLinks = this.state.hover && d.edges.find(edge => edge.source.name === this.state.hover && edge.target.name === d.d.name);
+          const hoverInDestLinks = this.state.hover && d.edges.find(edge => edge.target.name === this.state.hover && edge.source.name === d.d.name);
 
           if (this.state.hover === d.d.name) {
-            style.fontWeight = 'bolder';
+            style.fontWeight = 'bold';
             label = `${d.d.name} Total: ${this.props.valueFormatter(d.d.value)}`;
           } else if (hoverInSourceLinks) {
-            style.fontWeight = 'bolder';
+            style.fontWeight = 'bold';
             label = `${d.d.name}: ${this.props.valueFormatter(hoverInSourceLinks.value)}`;
             return (<text
               key={key}
@@ -87,7 +96,7 @@ class Sankey extends React.Component {
               &#8594; {label}
             </text>);
           } else if (hoverInDestLinks) {
-            style.fontWeight = 'bolder';
+            style.fontWeight = 'bold';
             label = `${d.d.name}: ${this.props.valueFormatter(hoverInDestLinks.value)}`;
             return (<text
               key={key}
@@ -114,7 +123,7 @@ class Sankey extends React.Component {
         }}
         edgeStyle={(d) => {
           // If source or target is hovered node, opacity should be darker
-          const opacity = (this.state.hover === d.source.name || this.state.hover === d.target.name) ? '0.75' : '0.15';
+          const opacity = (this.state.hover === d.source.name || this.state.hover === d.target.name) ? '0.75' : '0.25';
           return { stroke: 'none', fill: 'gray', fillOpacity: opacity };
         }}
         nodeStyle={(d) => {
@@ -130,7 +139,7 @@ class Sankey extends React.Component {
             fillOpacity: strokeOpacity,
           };
         }}
-        tooltipContent={() => ''}
+        tooltipContent={(d) => {console.log(d); return ''}}
       />
     </div>);
   }
