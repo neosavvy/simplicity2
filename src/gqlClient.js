@@ -2,22 +2,25 @@ import { ApolloClient } from 'apollo-client';
 import fetch from 'unfetch';
 import { createHttpLink } from 'apollo-link-http';
 import { IntrospectionFragmentMatcher, InMemoryCache } from 'apollo-cache-inmemory';
-import firebase from 'firebase';
 import { ApolloLink } from 'apollo-link';
-import { setContext } from 'apollo-link-context';
+import firebase from 'firebase';
 import { withClientState } from 'apollo-link-state';
+import { setContext } from 'apollo-link-context';
 import { resolvers } from './resolvers';
 import { defaultState } from './defaultState';
 import { fragmentTypes } from './fragmentTypes';
 
 let SERVER_URL = 'https://data-api1.ashevillenc.gov/graphql';
+if (window.location.origin.indexOf('dev-simplicity') > -1 || process.env.USE_DEV_API === 'true') {
+  SERVER_URL = 'https://dev-data-api1.ashevillenc.gov/graphql';
+}
 if (process.env.USE_LOCAL_API === 'true') {
   SERVER_URL = 'http://localhost:8080/graphql';
 }
 
 const httpLink = createHttpLink({ uri: SERVER_URL, fetch });
 
-const middlewareLink = setContext(
+const authLink = setContext(
   request =>
     new Promise((success, fail) => {
       const signedInUser = firebase.auth().currentUser;
@@ -25,22 +28,19 @@ const middlewareLink = setContext(
         signedInUser.getIdToken(true)
         .then((idToken) => {
           localStorage.setItem('token', idToken);
-          setTimeout(() => {
-            success({ headers: {
-              authorization: idToken,
-            } });
-          }, 10);
+          success({ headers: {
+            authorization: idToken,
+          } });
+          fail(Error(request.statusText));
         });
       } else {
-        setTimeout(() => {
-          success({ headers: {
-            authorization: localStorage.getItem('token') || null,
-          } });
-        }, 10);
+        success({ headers: {
+          authorization: localStorage.getItem('token') || null,
+        } });
+        fail(Error(request.statusText));
       }
     })
 );
-const link = middlewareLink.concat(httpLink);
 
 const fragmentMatcher = new IntrospectionFragmentMatcher({
   introspectionQueryResultData: fragmentTypes,
@@ -57,7 +57,8 @@ const stateLink = withClientState({
 const aClient = new ApolloClient({
   link: ApolloLink.from([
     stateLink,
-    link,
+    authLink,
+    httpLink,
   ]),
   cache,
 });

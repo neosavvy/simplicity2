@@ -1,5 +1,7 @@
 @import "bootstrap/bootstrap";
 @import "components/components";
+@import "components/react-widgets-copied-files/css/react-widgets";
+
 
 /*VARIABLES*/
 $desktop-min: 1025px;
@@ -324,6 +326,11 @@ a.inText{
 	font-size: 2rem;
 }
 
+.lang-switcher {
+  font-size: 1rem;
+  margin-right: 5px;
+}
+
 /*DATA FIELDSET DETAILS*/
 .detailsFieldset{
 	border: 1px solid white;
@@ -444,6 +451,14 @@ a.inText{
 		max-height: 60px;
 		padding: .5rem 0;
 	}
+}
+
+/*VISUALIZATIONS*/
+.visualization-layer .background-graphics {
+  opacity: 0.25;
+}
+.visualization-layer .axis line {
+  opacity: 0.25;
 }
 
 /*************************************************************************************/
@@ -678,7 +693,7 @@ label {
 
 .tooltip-content {
   background: white;
-  border: 1px solid black;
+  border: 0.1px solid gray;
   color: black;
   z-index: 99;
   opacity: 1;
@@ -702,7 +717,7 @@ label {
 .tooltip {
   opacity: 1;
   background-color: white;
-  border: 0.1px solid black;
+  border: 0.1px solid gray;
 }
 
 .semiotic-axis path {

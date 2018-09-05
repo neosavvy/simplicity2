@@ -6,10 +6,11 @@ import { labelOrder } from './visUtilities';
 const HorizontalLegend = (props) => {
   const rectWidth = 15;
 
-  const labelItems = labelOrder(props.formattedData, props.valueAccessor);
+  const labelItems = props.labelItems || labelOrder(props.formattedData, props.valueAccessor);
 
   return (<div
     style={props.style}
+    aria-label="Legend values for chart"
   >
     {labelItems.map((item, index) => {
       const label = props.legendLabelFormatter(item.label);
