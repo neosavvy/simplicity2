@@ -122,7 +122,7 @@ const Routes = () => (
         <Route path="bpt_projects">
           <IndexRoute component={ProjectFlowDashboard} />
         </Route>
-        <Route path="it_outages">
+        <Route path="outages">
           <IndexRoute component={Outages} />
         </Route>
         <Route path="pcard_compliance">
@@ -164,4 +164,3 @@ const Routes = () => (
 );
 
 export default Routes;
-
