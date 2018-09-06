@@ -4,129 +4,62 @@ import { ResponsiveXYFrame } from 'semiotic';
 import { scaleLinear } from 'd3-scale';
 import { timeMonth } from 'd3-time';
 import Tooltip from '../../../shared/visualization/Tooltip';
-import { dollarFormatter } from '../../../shared/visualization/visUtilities';
 
-const months = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
 
-// TODO: where else should d3-time and timemonth be used rather than some hacky method?
-
-class BubbleChart extends React.Component {
+class XYBubbleChart extends React.Component {
   constructor(props) {
     super(props);
 
-    this.cleanedData = this.props.data.map((d, i) => {
-      const rVal = Object.assign({}, d);
-      rVal.color = this.props.colorScheme[i];
-      return rVal;
-    });
-    this.allDataByType = this.getallDataByType(this.cleanedData);
-
-    this.years = this.cleanedData
-      .map(d => this.props.xAccessor(d).getFullYear())
-      .filter((value, index, self) => self.indexOf(value) === index)
-      .concat([new Date().getFullYear() + 1])
-      .map(d => new Date(+d, 0));
-
-
-    const maxSeverity = this.cleanedData.sort((a, b) => b['Severity?'] - a['Severity?'])[0]['Severity?'];
-
     this.radiusFunc = scaleLinear()
       .range([3, 25])
-      .domain([0, maxSeverity]);
+      .domain([0, 3]);
+      // USE MAX SEVERITY INSTEAD
 
-    this.state = {
-      activeKeys: this.props.keys,
-      brushedData: this.cleanedData,
-      brushExtent: [this.years[this.years.length - 2], this.years[this.years.length - 1]],
-      hover: null,
-    };
+    // Eventually add the brush/timelie back in
+    // Default to last quarter, but have all time data available
+    // this.state = {
+    //   brushedData: this.cleanedData,
+    //   brushExtent: [this.years[this.years.length - 2], this.years[this.years.length - 1]],
+    //   hover: null,
+    // };
 
-    this.brushEnd = this.brushEnd.bind(this);
+    // this.brushEnd = this.brushEnd.bind(this);
   }
-
-  getByTypeAndYear(inputData) {
-    const returnData = {};
-    this.props.keys.forEach((volKey, i) => {
-      returnData[volKey] = {};
-      inputData[volKey].forEach((d) => {
-        const year = this.props.xAccessor(d).getFullYear();
-        if (!returnData[volKey][year]) {
-          returnData[volKey][year] = [];
-        }
-        returnData[volKey][year].push(d);
-      });
-    });
-    return returnData;
-  }
-
-  getallDataByType(inputData) {
-    const returnObject = {};
-    this.props.keys.forEach((k) => {
-      returnObject[k] = inputData.filter(d => d.Application === k);
-    });
-    return returnObject;
-  }
-
-  brushEnd(e) {
-    let newExtent;
-    if (e) {
-      // snap brush
-      newExtent = e.map(timeMonth.round);
-      if (newExtent[0] >= newExtent[1]) {
-        newExtent[0] = timeMonth.floor(newExtent[0]);
-        newExtent[1] = timeMonth.ciel(newExtent[1]);
-      }
-    } else {
-      newExtent = [0, 0];
-    }
-    this.setState({
-      brushExtent: newExtent,
-      brushedData: e ? this.cleanedData.filter(d => this.props.xAccessor(d) >= newExtent[0] && this.props.xAccessor(d) <= newExtent[1]) : this.cleanedData,
-    });
-  }
-
-  handleLegendSelect(key, activeNow) {
-    this.setState({
-      activeKeys: activeNow ?
-        this.state.activeKeys.filter(thisKey => thisKey !== key) :
-        this.state.activeKeys.concat([key]),
-    });
-  }
+  //
+  // brushEnd(e) {
+  //   let newExtent;
+  //   if (e) {
+  //     // snap brush
+  //     newExtent = e.map(timeMonth.round);
+  //     if (newExtent[0] >= newExtent[1]) {
+  //       newExtent[0] = timeMonth.floor(newExtent[0]);
+  //       newExtent[1] = timeMonth.ciel(newExtent[1]);
+  //     }
+  //   } else {
+  //     newExtent = [0, 0];
+  //   }
+  //   this.setState({
+  //     brushExtent: newExtent,
+  //     brushedData: e ? this.cleanedData.filter(d => this.props.xAccessor(d) >= newExtent[0] && this.props.xAccessor(d) <= newExtent[1]) : this.cleanedData,
+  //   });
+  // }
 
   render() {
+
+    // Receive data that has color already assigned
+
     let currentLines = [];
-    const currentLinesBrushable = [];
 
     const filteredDataByType = this.getallDataByType(this.state.brushedData);
     const byTypeAndYear = this.getByTypeAndYear(filteredDataByType);
 
-    this.state.activeKeys.forEach((type) => {
-      currentLinesBrushable.push({
-        coordinates: this.allDataByType[type],
-      });
-      currentLines = currentLines.concat(Object.values(byTypeAndYear[type]).map(d => ({
-        type,
-        coordinates: d,
-        year: this.props.xAccessor(d[0]).getFullYear(),
-      })));
-    });
+    console.log(filteredDataByType)
+    console.log(byTypeAndYear)
+
 
     return (<div style={{ width: '100%', textAlign: 'center' }} className="permitVol">
       <div style={{ margin: '2% 10%', whiteSpace: 'wrap' }}>
-        {this.props.keys.map((key, i) => {
+        {/* {this.props.keys.map((key, i) => {
           const activeNow = this.state.activeKeys.findIndex(type => type === key) >= 0;
           return (<div
             role="checkbox"
@@ -181,9 +114,9 @@ class BubbleChart extends React.Component {
               </span>
             </div>
           </div>);
-        })}
+        })} */}
       </div>
-      <ResponsiveXYFrame
+      {/* <ResponsiveXYFrame
         title="Volume Summary"
         responsiveWidth
         size={[1000, 130]}
@@ -193,7 +126,7 @@ class BubbleChart extends React.Component {
           left: 50,
           right: 40,
         }}
-        lines={currentLinesBrushable}
+        // lines={currentLinesBrushable}
         lineType="line"
         xAccessor={this.props.xAccessor}
         yAccessor={this.props.yAccessor}
@@ -212,7 +145,7 @@ class BubbleChart extends React.Component {
           brush: 'xBrush',
           extent: this.state.brushExtent,
         }}
-      />
+      /> */}
       <ResponsiveXYFrame
         title="Monthly Comparison"
         responsiveWidth
@@ -294,8 +227,7 @@ class BubbleChart extends React.Component {
   }
 }
 
-BubbleChart.propTypes = {
-  colorScheme: PropTypes.arrayOf(PropTypes.string),
+XYBubbleChart.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   keys: PropTypes.arrayOf(PropTypes.string),
   xAccessor: PropTypes.func,

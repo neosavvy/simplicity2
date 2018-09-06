@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import BubbleChart from './BubbleChart';
+import BubbleChart from './XYBubbleChart';
 import { data } from './data';
 
 
@@ -18,14 +18,26 @@ class Outages extends React.Component {
   }
 
   render() {
+    // good to bad gradient of #b3daff to #b30000 is colorblind safe
+    // TODO: make the "application down" a tooltip
+    // make the severity the color
+    // make the legend reflect the color scheme
+    // remove volume summary
+    // make size also the number of hours
+    // Planned outages as annotations-- black dots?
+
+    // use xyframe and make xaxis dummy based on
+
+
+    // Assign colors to data here
+
+
     return (<div>
       <h1>IT Application Outage History</h1>
-      <p>Click the boxes in the legend to show and hide applications.  Move the highlight box on the summary line chart to change the time span of data for the monthly comparison graph. </p>
       <BubbleChart
-        data={data}
-        colorScheme={['#B66DFF', '#DB6D00', '#006DDB', '#000000', '#FF6DB6', '#01b0b0', '#2fe12f', '#004949', '#6DB6FF', '#490092', '#920000', '#006DDB', '#490092', '#FF6DB6', '#000000', '#DB6D00', '#2fe12f', '#01b0b0', '#6DB6FF', '#FFBDDB']}
-        keys={data.map(d => d.Application).filter((d, i, array) => array.indexOf(d) === i)}
+        data={data.filter(d => !isNaN(+d['Hours Down?']))}
         xAccessor={parseDateTime}
+        yAccessor={d => d['Hours Down?']}
       />
     </div>);
   }
